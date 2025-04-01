@@ -12,7 +12,7 @@ app.use(express.json());
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
-
+/*
 app.get('/api/hello', async (req, res) => {
   try {
     const now = await pool.query('SELECT NOW()');
@@ -22,6 +22,11 @@ app.get('/api/hello', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+*/
+app.get('/api/hello', (req,res) => {
+  res.json({ message: 'Hello from backend!' });
+});
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
