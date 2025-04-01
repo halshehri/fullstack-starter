@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
 function App() {
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,9 +12,8 @@ function App() {
   const fetchCalls = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/calls');
+      const response = await axios.get(`${API_BASE_URL}/calls`);
       console.log('calls from API:', response.data);
-      // Ensure response is an array before setting
       if (Array.isArray(response.data)) {
         setCalls(response.data);
       } else {
@@ -30,7 +31,7 @@ function App() {
   const logNewCall = async () => {
     try {
       setLogging(true);
-      await axios.post('/api/calls');
+      await axios.post(`${API_BASE_URL}/calls`);
       setSuccessMessage('New timestamp logged successfully ✅');
       await fetchCalls();
     } catch (error) {
