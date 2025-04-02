@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '/api';
+const APP_ENV = typeof __APP_ENV__ !== 'undefined' ? __APP_ENV__ : 'production';
 
 function App() {
   const [calls, setCalls] = useState([]);
@@ -13,7 +14,7 @@ function App() {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/calls`);
-      console.log('calls from API:', response.data);
+      console.log(`[${APP_ENV}] calls from API:`, response.data);
       if (Array.isArray(response.data)) {
         setCalls(response.data);
       } else {
@@ -47,6 +48,23 @@ function App() {
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+      {/* 🔖 Environment banner */}
+      {APP_ENV !== 'production' && (
+        <div
+          style={{
+            background: '#ffe58f',
+            color: '#333',
+            padding: '0.75rem',
+            borderRadius: '6px',
+            marginBottom: '1.5rem',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          }}
+        >
+          🚧 This is a <span style={{ textTransform: 'uppercase' }}>{APP_ENV}</span> environment
+        </div>
+      )}
+
       <h2>📞 Last 5 Call Timestamps</h2>
 
       {loading ? (
