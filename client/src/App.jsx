@@ -1,20 +1,30 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '/api';
-const APP_ENV = typeof __APP_ENV__ !== 'undefined' ? __APP_ENV__ : 'production';
+// 💡 Define known API endpoints for each environment
+const ENV_OPTIONS = {
+  production: typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '/api',
+  staging: 'https://your-staging-backend.up.railway.app/api',
+  dev: 'http://localhost:3000/api',
+};
+
+const getOverrideEnv = () => localStorage.getItem('ENV_OVERRIDE') || (typeof __APP_ENV__ !== 'undefined' ? __APP_ENV__ : 'production');
+const getApiBaseUrl = () => ENV_OPTIONS[getOverrideEnv()] || ENV_OPTIONS.production;
 
 function App() {
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [logging, setLogging] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [envVisible, setEnvVisible] = useState(false);
+  const [overrideEnv, setOverrideEnv] = useState(getOverrideEnv());
+  const API_BASE_URL = getApiBaseUrl();
 
   const fetchCalls = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/calls`);
-      console.log(`[${APP_ENV}] calls from API:`, response.data);
+      console.log(`[${overrideEnv}] calls from API:`, response.data);
       if (Array.isArray(response.data)) {
         setCalls(response.data);
       } else {
@@ -42,14 +52,54 @@ function App() {
     }
   };
 
+  // Toggle the secret env switcher with Ctrl + E
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+        setEnvVisible((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   useEffect(() => {
     fetchCalls();
-  }, []);
+  }, [API_BASE_URL]);
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      {/* 🔖 Environment banner */}
-      {APP_ENV !== 'production' && (
+      {/* 🔐 Hidden Dev Environment Switcher */}
+      {envVisible && (
+        <div style={{
+          background: '#cffafe',
+          padding: '0.5rem 1rem',
+          marginBottom: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          border: '1px solid #0ea5e9',
+          borderRadius: '6px',
+        }}>
+          <strong>Env Override:</strong>
+          <select
+            value={overrideEnv}
+            onChange={(e) => {
+              const selectedEnv = e.target.value;
+              localStorage.setItem('ENV_OVERRIDE', selectedEnv);
+              setOverrideEnv(selectedEnv);
+              window.location.reload(); // reload app to reapply env
+            }}
+          >
+            {Object.keys(ENV_OPTIONS).map((env) => (
+              <option key={env} value={env}>{env}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* 🔖 Normal environment banner */}
+      {overrideEnv !== 'production' && (
         <div
           style={{
             background: '#ffe58f',
@@ -61,7 +111,7 @@ function App() {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           }}
         >
-          🚧 This is a <span style={{ textTransform: 'uppercase' }}>{APP_ENV}</span> environment
+          🚧 This is a <span style={{ textTransform: 'uppercase' }}>{overrideEnv}</span> environment
         </div>
       )}
 
