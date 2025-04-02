@@ -52,10 +52,10 @@ function App() {
     }
   };
 
-  // Toggle the secret env switcher with Ctrl + E
+  // Toggle the secret env switcher with Ctrl + M
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.ctrlKey && e.key.toLowerCase() === 'e') {
+      if (e.ctrlKey && e.key.toLowerCase() === 'm') {
         setEnvVisible((prev) => !prev);
       }
     };
